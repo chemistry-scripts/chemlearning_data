@@ -58,6 +58,5 @@ def main():
     qm9_tar.close()
 
 
-
 if __name__ == "__main__":
     main()
