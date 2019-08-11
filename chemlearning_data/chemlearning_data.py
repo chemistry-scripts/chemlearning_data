@@ -13,9 +13,7 @@ import chemlearning_data.gaussian_job as gaussian_job
 
 # Here comes your function definitions
 def compute_dispersion_correction(xyz_geometry):
-
-    dft_calculation = gaussian_job.GaussianJob()
-    dft_calculation
+    pass
 
 
 def extract_xyz_geometries(xyz_file):
