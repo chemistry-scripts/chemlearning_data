@@ -5,9 +5,9 @@
 """Tools to use data (especially from QM9) for machine learning applications."""
 
 # Here comes your imports
-import cclib
-import tarfile
 import os
+import tarfile
+import cclib
 import chemlearning_data.gaussian_job as gaussian_job
 
 
@@ -28,7 +28,7 @@ def extract_xyz_geometries(xyz_file):
     with open(xyz_file) as file:
         n_atoms = int(file.readline())
         properties.append(file.readline().split("\t"))
-        for i in range(0, n_atoms):
+        for _ in range(0, n_atoms):
             line = file.readline().split("\t")
             atoms.append(line[0])
             coordinates.append(line[1:4])
