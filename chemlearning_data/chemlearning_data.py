@@ -97,7 +97,8 @@ def main():
     # Extract all useful data, retrieve a dict of Gaussian jobs
     logging.info("--- Extracting data from xyz files ---")
     gaussian_jobs = list()
-    for file_id, file_name in zip(qm9files.keys(), qm9files.values()):
+    for file_id in iter(qm9files):
+        file_name = qm9files[file_id]
         molecule = extract_xyz_geometries(file_name)
         gaussian_job = GaussianJob(
             basedir=computations_location,
