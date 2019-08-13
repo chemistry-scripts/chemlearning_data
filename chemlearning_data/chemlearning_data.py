@@ -36,8 +36,10 @@ def extract_xyz_geometries(xyz_file):
 
 
 def get_qm9files(data_location):
-    with os.scandir(data_location) as it:
-        for entry in it:
+    """Get a list of all xyz files, returned as a dict of ids/file_name"""
+    qm9files = dict()
+    with os.scandir(data_location) as folder_content:
+        for entry in folder_content:
             # Ignore other files than .xyz
             if entry.name.endswith(".xyz"):
                 # File is called dsgdb9nsd_012503.xyz
@@ -45,6 +47,8 @@ def get_qm9files(data_location):
                 file_name = str(entry.name).split("_")[1]
                 file_id = file_name.split(".")[0]
                 extract_xyz_geometries(entry.name)
+                qm9files[file_id] = file_name
+    return qm9files
 
 
 def main():
