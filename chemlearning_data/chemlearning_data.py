@@ -10,6 +10,8 @@ import os
 import tarfile
 from concurrent.futures import ProcessPoolExecutor
 from chemlearning_data.gaussian_job import GaussianJob
+from chemlearning_data.molecule import Molecule
+from cclib.parser.utils import PeriodicTable
 
 
 def extract_xyz_geometries(xyz_file):
@@ -28,7 +30,13 @@ def extract_xyz_geometries(xyz_file):
             line = file.readline().split("\t")
             atoms.append(line[0])
             coordinates.append(line[1:4])
-    molecule = Molecule(coordinates, atoms)
+
+    # Cleanup atoms list thanks to cclib PeriodicTable, convert them to atomic number
+    periodic_table = PeriodicTable()
+    elements_list = [periodic_table.number[atom] for atom in atoms]
+
+    # Build the Molecule object and return it
+    molecule = Molecule(coordinates, elements_list)
     return molecule
 
 
