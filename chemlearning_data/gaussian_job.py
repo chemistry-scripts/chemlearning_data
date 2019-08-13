@@ -197,6 +197,7 @@ class GaussianJob:
         # Write input file
         with open(self.filenames["input"], mode="w") as input_file:
             input_file.write("\n".join(self.build_input_script()))
+        logging.debug("Wrote file %s", self.filenames["input"])
         # Get back to base directory
         os.chdir(self.basedir)
 

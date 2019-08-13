@@ -14,9 +14,9 @@ from chemlearning_data.gaussian_job import GaussianJob
 
 def extract_xyz_geometries(xyz_file):
     """Extract xyz geometries from files in QM9"""
-    properties = []
-    coordinates = []
-    atoms = []
+    properties = list()
+    coordinates = list()
+    atoms = list()
 
     # Open the file, then retrieve the first two lines for the properties included.
     # With natoms, read all useful lines to get the coordinates, splitting them between
@@ -28,7 +28,8 @@ def extract_xyz_geometries(xyz_file):
             line = file.readline().split("\t")
             atoms.append(line[0])
             coordinates.append(line[1:4])
-    return coordinates, atoms, properties
+    molecule = Molecule(coordinates, atoms)
+    return molecule
 
 
 def get_qm9files(data_location):
@@ -86,23 +87,26 @@ def main():
     qm9files = get_qm9files(data_location=data_location)
 
     # Extract all useful data, retrieve a dict of Gaussian jobs
+    logging.info("--- Extracting data from xyz files ---")
     gaussian_jobs = list()
     for file_id, file_name in zip(qm9files.keys(), qm9files.values()):
-        molecules = extract_xyz_geometries(file_name)
+        molecule = extract_xyz_geometries(file_name)
         gaussian_job = GaussianJob(
             basedir=computations_location,
             name=file_name,
-            molecule=molecules,
+            molecule=molecule,
             job_id=file_id,
             gaussian_args=gaussian_arguments,
         )
         gaussian_jobs.append(gaussian_job)
 
     # Setup all computations
+    logging.info("--- Setting up all jobs ---")
     for job in gaussian_jobs:
         job.setup_computation()
 
     # Run all computations in parallel
+    logging.info("--- Starting all jobs ---")
     with ProcessPoolExecutor() as executor:
         for job in gaussian_jobs:
             executor.submit(job.run)
