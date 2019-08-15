@@ -79,51 +79,73 @@ def setup_logger():
     logger.addHandler(stream_handler)
 
 
+def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
+    """
+    Wrapper around all operations:
+        - Decompression of file
+        - Parsing and retrieving useful data
+        - Setting up computation
+        - Running Gaussian computation
+        - Retrieving computation results
+    """
+    logging.info("Computing dispersion correction for %s", str(xyz_file))
+    # Extract proper file form tar, but only in RAM
+    extracted_xyz = tar_file.extractfile(xyz_file)
+    molecule = extract_xyz_geometries(extracted_xyz)
+
+    # Get useful data for building the Gaussian job
+    file_name = str(xyz_file).split("_")[1]
+    file_id = file_name.split(".")[0]
+
+    # Build the Gaussian job
+    logging.debug("Setting up Gaussian job for %s", str(xyz_file))
+    job = GaussianJob(
+        basedir=locations["computations"],
+        name=file_name,
+        molecule=molecule,
+        job_id=file_id,
+        gaussian_args=gaussian_args,
+    )
+    job.setup_computation()
+
+    # Run the job
+    logging.debug("Starting Gaussian job for %s", str(xyz_file))
+    job.run()
+
+    # Retrieve results upon completion
+    logging.debug("Parsing results for %s", str(xyz_file))
+    energies = job.get_energies()
+    # Retrieve all useful energies
+    return energies
+
+
 def main():
     """Launcher."""
     # Setup all variables
     qm9_location = "qm9/qm9.tar.bz2"
     data_location = "data"
     computations_location = "computation"
+    folders = dict()
+    folders["qm9"] = qm9_location
+    folders["data"] = data_location
+    folders["computations"] = computations_location
+
+    # Set up local Gaussian arguments
     gaussian_arguments = get_gaussian_arguments()
 
-    # Extract tar bz2 archive
-    qm9_tar = tarfile.open(name=qm9_location, mode="r:bz2")
-    qm9_tar.extractall(path=data_location)
-    qm9_tar.close()
-    # List all xyz files
-    qm9files = get_qm9files(data_location=data_location)
-
-    # Extract all useful data, retrieve a dict of Gaussian jobs
-    logging.info("--- Extracting data from xyz files ---")
-    gaussian_jobs = list()
-    for file_id in iter(qm9files):
-        file_name = qm9files[file_id]
-        molecule = extract_xyz_geometries(file_name)
-        gaussian_job = GaussianJob(
-            basedir=computations_location,
-            name=file_name,
-            molecule=molecule,
-            job_id=file_id,
-            gaussian_args=gaussian_arguments,
-        )
-        gaussian_jobs.append(gaussian_job)
-
-    # Setup all computations
-    logging.info("--- Setting up all jobs ---")
-    for job in gaussian_jobs:
-        job.setup_computation()
-
-    # Run all computations in parallel
-    logging.info("--- Starting all jobs ---")
-    with ProcessPoolExecutor() as executor:
-        for job in gaussian_jobs:
-            executor.submit(job.run)
-
-    # Retrieve all useful energies
-    energies = dict()
-    for job in gaussian_jobs:
-        energies[job.job_id] = job.get_energies()
+    # Iterate over contents of tar file and submit every job to the executor
+    results = list()
+    with tarfile.open(name=qm9_location, mode="r:bz2") as qm9_tar:
+        with ProcessPoolExecutor() as executor:
+            for xyz_file in qm9_tar:
+                future_result = executor.submit(
+                    compute_dispersion_correction,
+                    xyz_file=xyz_file,
+                    tar_file=qm9_tar,
+                    locations=folders,
+                    gaussian_args=gaussian_arguments,
+                )
+                results.append((str(xyz_file), future_result))
 
 
 if __name__ == "__main__":
