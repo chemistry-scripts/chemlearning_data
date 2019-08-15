@@ -9,9 +9,9 @@ import logging
 import os
 import tarfile
 from concurrent.futures import ProcessPoolExecutor
+from cclib.parser.utils import PeriodicTable
 from chemlearning_data.gaussian_job import GaussianJob
 from chemlearning_data.molecule import Molecule
-from cclib.parser.utils import PeriodicTable
 
 
 def extract_xyz_geometries(xyz_file):
