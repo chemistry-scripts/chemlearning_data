@@ -23,7 +23,7 @@ def extract_xyz_geometries(xyz_file):
     # Open the file, then retrieve the first two lines for the properties included.
     # With natoms, read all useful lines to get the coordinates, splitting them between
     # atom nuclei on one list and xyz coordinates on the other. See qm9_readme for details
-    with open(xyz_file) as file:
+    with open(xyz_file, "r") as file:
         n_atoms = int(file.readline())
         properties.append(file.readline().split("\t"))
         for _ in range(0, n_atoms):
@@ -125,6 +125,7 @@ def main():
     qm9_location = "qm9/qm9.tar.bz2"
     data_location = "data"
     computations_location = "computation"
+    output_file = "qm9/qm9_dispersion.data"
     folders = dict()
     folders["qm9"] = qm9_location
     folders["data"] = data_location
@@ -146,6 +147,11 @@ def main():
                     gaussian_args=gaussian_arguments,
                 )
                 results.append((str(xyz_file), future_result))
+
+    # Iterate over all results to build the finale table
+    with open(output_file, mode="w") as out_file:
+        for result in results:
+            out_file.write(result[0] + "\t" + "\t".join(result[1].result()) + "\n")
 
 
 if __name__ == "__main__":
