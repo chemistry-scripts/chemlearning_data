@@ -6,6 +6,8 @@
 
 # Here comes your imports
 import logging
+import logging.handlers
+import multiprocessing
 import os
 import tarfile
 from concurrent.futures import ProcessPoolExecutor
@@ -79,7 +81,9 @@ def setup_logger():
     logger.addHandler(stream_handler)
 
 
-def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
+def compute_dispersion_correction(
+    logger_configurer, xyz_file, tar_file, locations, gaussian_args
+):
     """
     Wrapper around all operations:
         - Decompression of file
@@ -88,6 +92,9 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
         - Running Gaussian computation
         - Retrieving computation results
     """
+    # Configure logging within worker process
+    logger_configurer()
+
     logging.info("Computing dispersion correction for %s", str(xyz_file))
     # Extract proper file form tar, but only in RAM
     extracted_xyz = tar_file.extractfile(xyz_file)
@@ -119,6 +126,28 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
     return energies
 
 
+# This is the listener process top-level loop: wait for logging events
+# (LogRecords)on the queue and handle them, quit when you get a None for a
+# LogRecord.
+def listener_process(queue, configurer):
+    configurer()
+    while True:
+        try:
+            record = queue.get()
+            if (
+                record is None
+            ):  # We send this as a sentinel to tell the listener to quit.
+                break
+            logger = logging.getLogger(record.name)
+            logger.handle(record)  # No level or filter logic applied - just do it!
+        except Exception:
+            import sys
+            import traceback
+
+            print("Whoops! Problem:", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+
+
 def main():
     """Launcher."""
     # Setup all variables
@@ -134,6 +163,14 @@ def main():
     # Set up local Gaussian arguments
     gaussian_arguments = get_gaussian_arguments()
 
+    # Set up listener for logging events
+    queue = multiprocessing.Manager().Queue(-1)
+    listener = multiprocessing.Process(
+        target=listener_process, args=(queue, setup_logger)
+    )
+
+    listener.start()
+
     # Iterate over contents of tar file and submit every job to the executor
     results = list()
     with tarfile.open(name=qm9_location, mode="r:bz2") as qm9_tar:
@@ -141,12 +178,16 @@ def main():
             for xyz_file in qm9_tar:
                 future_result = executor.submit(
                     compute_dispersion_correction,
+                    logger_configurer=setup_logger,
                     xyz_file=xyz_file,
                     tar_file=qm9_tar,
                     locations=folders,
                     gaussian_args=gaussian_arguments,
                 )
                 results.append((str(xyz_file), future_result))
+    # Tell the listener it has to end by sending a None to the queue
+    queue.put_nowait(None)
+    listener.join()
 
     # Iterate over all results to build the finale table
     with open(output_file, mode="w") as out_file:
@@ -155,6 +196,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # Setup logger
-    setup_logger()
     main()
