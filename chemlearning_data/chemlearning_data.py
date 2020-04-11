@@ -23,13 +23,16 @@ def extract_xyz_geometries(xyz_file):
     # Open the file, then retrieve the first two lines for the properties included.
     # With natoms, read all useful lines to get the coordinates, splitting them between
     # atom nuclei on one list and xyz coordinates on the other. See qm9_readme for details
-    with open(xyz_file, "r") as file:
-        n_atoms = int(file.readline())
-        properties.append(file.readline().split("\t"))
-        for _ in range(0, n_atoms):
-            line = file.readline().split("\t")
-            atoms.append(line[0])
-            coordinates.append(line[1:4])
+    n_atoms = int(xyz_file.readline())
+    print(n_atoms)
+    properties = xyz_file.readline().split(b"\t")
+    properties = [prop.decode("utf-8") for prop in properties]
+
+    for line in xyz_file.readlines()[0:n_atoms]:
+        line = line.split(b"\t")
+        line = [elem.decode("utf-8") for elem in line]
+        atoms.append(str(line[0]))
+        coordinates.append(line[1:4])
 
     # Cleanup atoms list thanks to cclib PeriodicTable, convert them to atomic number
     periodic_table = PeriodicTable()
