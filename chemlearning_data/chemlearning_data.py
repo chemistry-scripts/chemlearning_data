@@ -32,7 +32,7 @@ def extract_xyz_geometries(xyz_file):
         line = line.split(b"\t")
         line = [elem.decode("utf-8") for elem in line]
         atoms.append(str(line[0]))
-        coordinates.append(line[1:4])
+        coordinates.append([float(xyz) for xyz in line[1:4]])
 
     # Cleanup atoms list thanks to cclib PeriodicTable, convert them to atomic number
     periodic_table = PeriodicTable()
@@ -99,6 +99,7 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
     # Get useful data for building the Gaussian job
     file_name = str(xyz_file).split("_")[1]
     file_id = file_name.split(".")[0]
+    file_name = file_id
 
     # Build the Gaussian job
     logging.debug("Setting up Gaussian job for %s", str(xyz_file))

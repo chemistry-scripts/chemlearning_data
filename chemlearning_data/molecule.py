@@ -14,7 +14,7 @@ class Molecule:
     Attributes:
         - coordinates (list of XYZ coordinates)
         - natoms (number of atoms, int)
-        - elements_list (list of elements as in peridoic table class from cclib)
+        - elements_list (list of elements as in periodic table class from cclib)
 
     """
 
