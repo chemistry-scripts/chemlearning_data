@@ -239,7 +239,7 @@ class GaussianJob:
         route = "# " + self.gaussian_args["functional"] + " "
         if self.gaussian_args["dispersion"] is not None:
             route += "EmpiricalDispersion=" + self.gaussian_args["dispersion"] + " "
-        route += "gen"
+        route += "gen freq"
         header.append(route)
         header.append("")
         # To update probably
