@@ -97,9 +97,8 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
     molecule = extract_xyz_geometries(extracted_xyz)
 
     # Get useful data for building the Gaussian job
-    file_name = str(xyz_file).split("_")[1]
-    file_id = file_name.split(".")[0]
-    file_name = file_id
+    file_name = xyz_file.name.split("_")[1] # Remove header dsgdb9nsd_
+    file_id = file_name.split(".")[0] # Get file id. (Remove .xyz)
 
     # Build the Gaussian job
     logging.debug("Setting up Gaussian job for %s", str(xyz_file))
@@ -126,7 +125,7 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
 def main():
     """Launcher."""
     # Setup all variables
-    qm9_location = "qm9/qm9.tar.bz2"
+    qm9_location = "qm9/qm9_test.tar.bz2"
     data_location = "data"
     computations_location = "computation"
     output_file = "qm9/qm9_dispersion.data"
