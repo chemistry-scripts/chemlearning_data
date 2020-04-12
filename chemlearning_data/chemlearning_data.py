@@ -16,7 +16,6 @@ from chemlearning_data.molecule import Molecule
 
 def extract_xyz_geometries(xyz_file):
     """Extract xyz geometries from files in QM9"""
-    properties = list()
     coordinates = list()
     atoms = list()
 
@@ -25,8 +24,7 @@ def extract_xyz_geometries(xyz_file):
     # atom nuclei on one list and xyz coordinates on the other. See qm9_readme for details
     n_atoms = int(xyz_file.readline())
     print(n_atoms)
-    properties = xyz_file.readline().split(b"\t")
-    properties = [prop.decode("utf-8") for prop in properties]
+    _ = xyz_file.readline()  # Property line. Do not use.
 
     for line in xyz_file.readlines()[0:n_atoms]:
         line = line.split(b"\t")
@@ -97,8 +95,8 @@ def compute_dispersion_correction(xyz_file, tar_file, locations, gaussian_args):
     molecule = extract_xyz_geometries(extracted_xyz)
 
     # Get useful data for building the Gaussian job
-    file_name = xyz_file.name.split("_")[1] # Remove header dsgdb9nsd_
-    file_id = file_name.split(".")[0] # Get file id. (Remove .xyz)
+    file_name = xyz_file.name.split("_")[1]  # Remove header dsgdb9nsd_
+    file_id = file_name.split(".")[0]  # Get file id. (Remove .xyz)
 
     # Build the Gaussian job
     logging.debug("Setting up Gaussian job for %s", str(xyz_file))
