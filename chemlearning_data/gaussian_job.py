@@ -7,6 +7,7 @@
 import os
 import logging
 from cclib.io import ccread
+from cclib.parser.utils import PeriodicTable
 
 
 class GaussianJob:
@@ -190,7 +191,7 @@ class GaussianJob:
         Create working directory, write input file
         """
         # Create working directory
-        os.makedirs(self.path, mode=0o777, exist_ok=False)
+        os.makedirs(self.path, mode=0o777, exist_ok=True)
         logging.info("Created directory %s", self.path)
         # Go into working directory
         os.chdir(self.path)
@@ -260,7 +261,9 @@ class GaussianJob:
         footer = []
 
         # Basis set is the same for all elements. No ECP either.
-        elements = list(set(self.molecule.elements_list))
+        # Remove duplicates, and convert to element name
+        periodic_table = PeriodicTable()
+        elements = [periodic_table.element[el] for el in list(set(self.molecule.elements_list))]
 
         elements = " ".join(elements)
         basisset = self.gaussian_args["basisset"]

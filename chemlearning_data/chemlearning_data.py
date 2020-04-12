@@ -130,7 +130,7 @@ def main():
     folders = dict()
     folders["qm9"] = qm9_location
     folders["data"] = data_location
-    folders["computations"] = computations_location
+    folders["computations"] = os.path.join(os.getcwd(), computations_location)
 
     # Set up local Gaussian arguments
     gaussian_arguments = get_gaussian_arguments()
