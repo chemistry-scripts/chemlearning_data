@@ -9,6 +9,7 @@ import logging
 import logging.handlers
 import os
 import tarfile
+from pathlib import Path
 from cclib.parser.utils import PeriodicTable
 from chemlearning_data.gaussian_job import GaussianJob
 from chemlearning_data.molecule import Molecule
@@ -128,9 +129,14 @@ def main():
     computations_location = "computation"
     output_file = "qm9/qm9_dispersion.data"
     folders = dict()
-    folders["qm9"] = qm9_location
-    folders["data"] = data_location
+    folders["basedir"] = os.getcwd()
+    folders["qm9"] = os.path.join(os.getcwd(), qm9_location)
+    folders["data"] = os.path.join(os.getcwd(), data_location)
     folders["computations"] = os.path.join(os.getcwd(), computations_location)
+
+    # Create all folders where necessary
+    for folder in folders:
+        Path(folder).mkdir(parents=True, exist_ok=True)
 
     # Set up local Gaussian arguments
     gaussian_arguments = get_gaussian_arguments()
@@ -149,10 +155,14 @@ def main():
             )
             results.append((str(xyz_file), result))
 
+    os.chdir(folders["basedir"])
+    logging.info("Writing data to output file: %s", output_file)
     # Iterate over all results to build the final table
     with open(output_file, mode="w") as out_file:
-        for result in results:
-            out_file.write(result[0] + "\t" + "\t".join(result[1].result()) + "\n")
+        for _, result in results:
+            # Careful for actual value extracting, dict are not ordered. Use actual keys.
+            values = [str(val) for val in result.values()]
+            out_file.write("\t".join(values) + "\n")
 
 
 if __name__ == "__main__":
