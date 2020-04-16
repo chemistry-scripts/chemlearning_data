@@ -176,7 +176,7 @@ class GaussianJob:
         os.chdir(self.path)
 
         # Parse file with cclib
-        data = ccread(self.filenames["output"])
+        data = ccread(self.filenames["output"], loglevel=logging.WARNING)
 
         #  Return the first coordinates, since it is a single point
         return data.atomcoords[0]
@@ -212,7 +212,7 @@ class GaussianJob:
         os.chdir(self.path)
 
         # Parse file with cclib
-        data = ccread(self.filenames["output"])
+        data = ccread(self.filenames["output"], loglevel=logging.WARNING)
 
         #  Return the parsed energies as a dictionary
         energies = dict.fromkeys(["scfenergy", "enthalpy", "freeenergy"])
