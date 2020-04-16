@@ -78,7 +78,7 @@ def compute_dispersion_correction(molecule, file_id, file_name, locations, gauss
     logging.info("Starting computation for %s", str(file_name))
 
     # Build the Gaussian job
-    logging.debug("Setting up Gaussian job for %s", str(xyz_file))
+    logging.debug("Setting up Gaussian job for %s", str(file_name))
     job = GaussianJob(
         basedir=locations["computations"],
         name=file_name,
@@ -89,11 +89,11 @@ def compute_dispersion_correction(molecule, file_id, file_name, locations, gauss
     job.setup_computation()
 
     # Run the job
-    logging.debug("Starting Gaussian job for %s", str(xyz_file))
+    logging.debug("Starting Gaussian job for %s", str(file_name))
     job.run()
 
     # Retrieve results upon completion
-    logging.debug("Parsing results for %s", str(xyz_file))
+    logging.debug("Parsing results for %s", str(file_name))
     # Retrieve all useful energies
     energies = job.get_energies()
 

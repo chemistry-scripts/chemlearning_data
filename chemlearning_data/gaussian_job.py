@@ -245,7 +245,7 @@ class GaussianJob:
         # This is a singlet. Careful for other systems!
         header.append("0 1")
 
-        logger.debug("Header: \n %s", "\n".join(header))
+        logging.debug("Header: \n %s", "\n".join(header))
         return header
 
     def build_footer(self):
@@ -274,7 +274,7 @@ class GaussianJob:
         # footer.append("PLOT")
         # footer.append("$END")
 
-        logger.debug("Footer: \n %s", "\n".join(footer))
+        logging.debug("Footer: \n %s", "\n".join(footer))
         return footer
 
     def build_input_script(self):
