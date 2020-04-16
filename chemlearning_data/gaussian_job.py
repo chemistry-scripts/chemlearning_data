@@ -3,9 +3,8 @@
 # Copyright (c) 2019, E. Nicolas
 
 """Gaussian Job class to start job, run it and analyze it"""
-
-import os
 import logging
+import os
 from cclib.io import ccread
 from cclib.parser.utils import PeriodicTable
 
@@ -113,14 +112,14 @@ class GaussianJob:
     def run(self):
         """Start the job."""
         # Log computation start
-        logger = logging.getLogger()
-        logger.info("Starting computation %s", str(self.job_id))
+        logging.info("Starting Gaussian: %s", str(self.name))
         # Get into workdir, start gaussian, then back to basedir
         os.chdir(self.path)
         os.system("g16 < " + self.filenames["input"] + " > " + self.filenames["output"])
         os.chdir(self.basedir)
         # Log end of computation
-        logger.info("Finished computation %s", str(self.job_id))
+        logging.info("Gaussian finished: %s", str(self.name))
+        return
 
     def extract_natural_charges(self):
         """Extract NBO Charges parsing the output file."""
@@ -209,8 +208,7 @@ class GaussianJob:
         :return:
         """
         # Log start
-        logger = logging.getLogger()
-        logger.info("Extracting energies for job %s", str(self.job_id))
+        logging.info("Extracting energies from %s", self.name)
 
         # Get into working directory
         os.chdir(self.path)
@@ -232,7 +230,6 @@ class GaussianJob:
 
         List of strings expected
         """
-        logger = logging.getLogger()
         header = list()
         header.append("%NProcShared=1")
         # header.append('%Mem=' + args['memory'])
@@ -257,7 +254,6 @@ class GaussianJob:
 
             List of strings.
             """
-        logger = logging.getLogger()
         footer = []
 
         # Basis set is the same for all elements. No ECP either.
@@ -279,7 +275,6 @@ class GaussianJob:
         # footer.append("$END")
 
         logger.debug("Footer: \n %s", "\n".join(footer))
-
         return footer
 
     def build_input_script(self):
@@ -300,3 +295,8 @@ class GaussianJob:
         script.append("")
 
         return script
+
+    def cleanup(self):
+        """Removing folders and files once everything is run and extracted"""
+        # TODO Remove everything
+        return
