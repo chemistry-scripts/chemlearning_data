@@ -106,21 +106,21 @@ def compute_dispersion_correction(molecule, file_id, file_name, locations, gauss
 def setup_logger():
     """Setup logging"""
     # Setup logging
-    loggingLevel = logging.INFO
+    logging_level = logging.INFO
 
-    logger = multiprocessing.log_to_stderr()
-    logger.setLevel(loggingLevel)
+    logger_subprocess = multiprocessing.get_logger()
+    logger_subprocess.setLevel(logging_level)
 
     logger_general = logging.getLogger()
-    logger_general.setLevel(loggingLevel)
+    logger_general.setLevel(logging_level)
 
     stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(loggingLevel)
+    stream_handler.setLevel(logging_level)
 
-    formatter = logging.Formatter("%(asctime)s :: %(levelname)s :: %(message)s")
+    formatter = logging.Formatter("%(asctime)s :: %(levelname)s/%(processName)s :: %(message)s")
     stream_handler.setFormatter(formatter)
 
-    logger.addHandler(stream_handler)
+    logger_subprocess.addHandler(stream_handler)
     logger_general.addHandler(stream_handler)
     return None
 

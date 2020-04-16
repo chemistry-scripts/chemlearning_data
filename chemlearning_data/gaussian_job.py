@@ -124,8 +124,7 @@ class GaussianJob:
     def extract_natural_charges(self):
         """Extract NBO Charges parsing the output file."""
         # Log start
-        logger = logging.getLogger()
-        logger.info("Parsing results from computation %s", str(self.job_id))
+        logging.info("Parsing results from computation %s", str(self.job_id))
 
         # Get into working directory
         os.chdir(self.path)
@@ -138,7 +137,7 @@ class GaussianJob:
             while line:
                 line = out_file.readline()
                 if "Summary of Natural Population Analysis:" in line:
-                    logger.debug("ID %s: Found NPA table.", str(self.job_id))
+                    logging.debug("ID %s: Found NPA table.", str(self.job_id))
                     # We have the table we want for the charges
                     # Read five lines to remove the header:
                     # Summary of Natural Population Analysis:
@@ -156,7 +155,7 @@ class GaussianJob:
                         line = out_file.readline()
                         line = line.split()
                         charges.append(line[2])
-                    logger.debug(
+                    logging.debug(
                         "ID %s: Charges = %s",
                         str(self.job_id),
                         " ".join([str(i) for i in charges]),
@@ -171,8 +170,7 @@ class GaussianJob:
     def get_coordinates(self):
         """Extract coordinates from output file."""
         # Log start
-        logger = logging.getLogger()
-        logger.info("Extracting coordinates for job %s", str(self.job_id))
+        logging.info("Extracting coordinates for job %s", str(self.job_id))
 
         # Get into working directory
         os.chdir(self.path)
