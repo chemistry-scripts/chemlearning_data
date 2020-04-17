@@ -297,5 +297,6 @@ class GaussianJob:
 
     def cleanup(self):
         """Removing folders and files once everything is run and extracted"""
+        logging.info("Removing directory: %s", str(self.path))
         shutil.rmtree(self.path)
         return

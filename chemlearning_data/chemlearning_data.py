@@ -173,6 +173,7 @@ def main():
                 results.append(future_result)
                 logging.info("Submitted %s", str(file_name))
             logging.info("All files submitted")
+        logging.info("All subprocesses terminated")
 
     # Retrieve results
     os.chdir(folders["basedir"])
