@@ -131,12 +131,13 @@ def main():
     qm9_location = "qm9/qm9_test.tar.bz2"
     data_location = "data"
     computations_location = "computation"
-    output_file = "qm9/qm9_dispersion.data"
     folders = dict()
     folders["basedir"] = os.getcwd()
     folders["qm9"] = os.path.join(os.getcwd(), qm9_location)
     folders["data"] = os.path.join(os.getcwd(), data_location)
     folders["computations"] = os.path.join(os.getcwd(), computations_location)
+
+    output_file = os.path.join(folders["data"], "qm9_dispersion.data")
 
     # Setup logging
     setup_logger()
