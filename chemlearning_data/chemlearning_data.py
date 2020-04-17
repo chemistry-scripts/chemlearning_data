@@ -100,7 +100,7 @@ def compute_dispersion_correction(molecule, file_id, file_name, locations, gauss
     # Cleanup after job
     job.cleanup()
 
-    return energies
+    return file_id, energies
 
 
 def setup_logger():
@@ -178,10 +178,13 @@ def main():
     os.chdir(folders["basedir"])
     # Iterate over all results to build the final table
     with open(output_file, mode="w") as out_file:
+        out_file.write("File_ID\tSCF_Energy\tEnthalpy\tFree_Energy\n")
         for result in results:
             # Careful for actual value extracting, dict are not ordered. Use actual keys.
-            values = [str(val) for val in result.result().values()]
-            out_file.write("\t".join(values) + "\n")
+            file_id, energies = result.result()
+            values = [energies["scfenergy"], energies["enthalpy"], energies["freeenergy"]]
+            values = [str(val) for val in values]
+            out_file.write(str(file_id) + "\t" + "\t".join(values) + "\n")
 
 
 if __name__ == "__main__":
