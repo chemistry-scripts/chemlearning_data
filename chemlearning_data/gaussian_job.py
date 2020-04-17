@@ -5,6 +5,7 @@
 """Gaussian Job class to start job, run it and analyze it"""
 import logging
 import os
+import shutil
 from cclib.io import ccread
 from cclib.parser.utils import PeriodicTable
 
@@ -296,5 +297,5 @@ class GaussianJob:
 
     def cleanup(self):
         """Removing folders and files once everything is run and extracted"""
-        # TODO Remove everything
+        shutil.rmtree(self.path)
         return
