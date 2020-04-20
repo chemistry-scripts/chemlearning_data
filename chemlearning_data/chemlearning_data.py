@@ -128,7 +128,7 @@ def setup_logger():
 def main():
     """Launcher."""
     # Setup all variables
-    qm9_location = "qm9/qm9_test.tar.bz2"
+    qm9_location = "qm9"
     data_location = "data"
     computations_location = "computation"
     folders = dict()
@@ -137,6 +137,8 @@ def main():
     folders["data"] = os.path.join(os.getcwd(), data_location)
     folders["computations"] = os.path.join(os.getcwd(), computations_location)
 
+    qm9_location = os.path.join(folders["qm9"], "qm9_test.tar.bz2")
+    # qm9_location = os.path.join(folders["qm9"], "qm9.tar.bz2")
     output_file = os.path.join(folders["data"], "qm9_dispersion.data")
 
     # Setup logging
