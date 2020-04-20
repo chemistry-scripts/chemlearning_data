@@ -7,6 +7,7 @@
 # Here comes your imports
 import multiprocessing
 import os
+import re
 import tarfile
 import logging
 from concurrent.futures.process import ProcessPoolExecutor
@@ -31,7 +32,15 @@ def extract_xyz_geometries(xyz_file):
         line = line.split(b"\t")
         line = [elem.decode("utf-8") for elem in line]
         atoms.append(str(line[0]))
-        coordinates.append([float(xyz) for xyz in line[1:4]])
+        coords = line[1:4]
+        for j, word in enumerate(coords):
+            if "*^" in word:  # Some values are written as powers of 10: e.g. 1.999*^-6.
+                values = re.split("\*\^", word)
+                coords[j] = float(values[0]) * pow(10, int(values[1]))
+            else:
+                coords[j] = float(word)
+
+        coordinates.append(coords)
 
     # Cleanup atoms list thanks to cclib PeriodicTable, convert them to atomic number
     periodic_table = PeriodicTable()
@@ -66,7 +75,9 @@ def get_gaussian_arguments():
     return args
 
 
-def compute_dispersion_correction(molecule, file_id, file_name, locations, gaussian_args):
+def compute_dispersion_correction(
+    molecule, file_id, file_name, locations, gaussian_args
+):
     """
     Wrapper around all operations:
         - Decompression of file
@@ -117,7 +128,9 @@ def setup_logger():
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging_level)
 
-    formatter = logging.Formatter("%(asctime)s :: %(levelname)s/%(processName)s :: %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s :: %(levelname)s/%(processName)s :: %(message)s"
+    )
     stream_handler.setFormatter(formatter)
 
     logger_subprocess.addHandler(stream_handler)
@@ -186,7 +199,11 @@ def main():
         for result in results:
             # Careful for actual value extracting, dict are not ordered. Use actual keys.
             file_id, energies = result.result()
-            values = [energies["scfenergy"], energies["enthalpy"], energies["freeenergy"]]
+            values = [
+                energies["scfenergy"],
+                energies["enthalpy"],
+                energies["freeenergy"],
+            ]
             values = [str(val) for val in values]
             out_file.write(str(file_id) + "\t" + "\t".join(values) + "\n")
 
