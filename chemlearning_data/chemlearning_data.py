@@ -10,6 +10,7 @@ import os
 import re
 import tarfile
 import logging
+import multiprocessing
 from concurrent.futures.process import ProcessPoolExecutor
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable
@@ -35,7 +36,7 @@ def extract_xyz_geometries(xyz_file):
         coords = line[1:4]
         for j, word in enumerate(coords):
             if "*^" in word:  # Some values are written as powers of 10: e.g. 1.999*^-6.
-                values = re.split("\*\^", word)
+                values = re.split(r"\*\^", word)
                 coords[j] = float(values[0]) * pow(10, int(values[1]))
             else:
                 coords[j] = float(word)
@@ -76,7 +77,7 @@ def get_gaussian_arguments():
 
 
 def compute_dispersion_correction(
-    molecule, file_id, file_name, locations, gaussian_args
+        molecule, file_id, file_name, locations, gaussian_args, output_file
 ):
     """
     Wrapper around all operations:
@@ -107,6 +108,15 @@ def compute_dispersion_correction(
     logging.debug("Parsing results for %s", str(file_name))
     # Retrieve all useful energies
     energies = job.get_energies()
+
+        with open(output_file, mode="a") as out_file:
+            values = [
+                energies["scfenergy"],
+                energies["enthalpy"],
+                energies["freeenergy"],
+            ]
+            values = [str(val) for val in values]
+            out_file.write(str(file_id) + "\t" + "\t".join(values) + "\n")
 
     # Cleanup after job
     job.cleanup()
@@ -153,6 +163,7 @@ def main():
     qm9_location = os.path.join(folders["qm9"], "qm9_test.tar.bz2")
     # qm9_location = os.path.join(folders["qm9"], "qm9.tar.bz2")
     output_file = os.path.join(folders["data"], "qm9_dispersion.data")
+    output_file_raw = os.path.join(folders["data"], "qm9_dispersion_raw.data")
 
     # Setup logging
     setup_logger()
@@ -160,6 +171,13 @@ def main():
     # Create all folders where necessary
     Path(folders["computations"]).mkdir(parents=True, exist_ok=True)
     Path(folders["data"]).mkdir(parents=True, exist_ok=True)
+
+    # Output file headers
+    with open(output_file_raw, mode="w") as out_file:
+        out_file.write("File_ID\tSCF_Energy\tEnthalpy\tFree_Energy\n")
+
+    with open(output_file, mode="w") as out_file:
+        out_file.write("File_ID\tSCF_Energy\tEnthalpy\tFree_Energy\n")
 
     # Set up local Gaussian arguments
     gaussian_arguments = get_gaussian_arguments()
@@ -194,8 +212,7 @@ def main():
     # Retrieve results
     os.chdir(folders["basedir"])
     # Iterate over all results to build the final table
-    with open(output_file, mode="w") as out_file:
-        out_file.write("File_ID\tSCF_Energy\tEnthalpy\tFree_Energy\n")
+    with open(output_file, mode="a") as out_file:
         for result in results:
             # Careful for actual value extracting, dict are not ordered. Use actual keys.
             file_id, energies = result.result()
