@@ -132,7 +132,7 @@ def compute_dispersion_correction(
 def setup_logger():
     """Setup logging"""
     # Setup logging
-    logging_level = logging.DEBUG
+    logging_level = logging.INFO
 
     logger_subprocess = multiprocessing.get_logger()
     logger_subprocess.setLevel(logging_level)
@@ -164,8 +164,8 @@ def main():
     folders["data"] = os.path.join(os.getcwd(), data_location)
     folders["computations"] = os.path.join(os.getcwd(), computations_location)
 
-    qm9_location = os.path.join(folders["qm9"], "qm9_test.tar.bz2")
-    # qm9_location = os.path.join(folders["qm9"], "qm9.tar.bz2")
+    # qm9_location = os.path.join(folders["qm9"], "qm9_test.tar.bz2")
+    qm9_location = os.path.join(folders["qm9"], "qm9.tar.bz2")
     output_file = os.path.join(folders["data"], "qm9_dispersion.data")
     output_file_raw = os.path.join(folders["data"], "qm9_dispersion_raw.data")
 
