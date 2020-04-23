@@ -5,7 +5,6 @@
 """Tools to use data (especially from QM9) for machine learning applications."""
 
 # Here comes your imports
-import multiprocessing
 import os
 import re
 import tarfile
@@ -16,6 +15,9 @@ from pathlib import Path
 from cclib.parser.utils import PeriodicTable
 from chemlearning_data.gaussian_job import GaussianJob
 from chemlearning_data.molecule import Molecule
+
+# pylint: disable=invalid-name
+lock = multiprocessing.Lock()
 
 
 def extract_xyz_geometries(xyz_file):
@@ -109,6 +111,9 @@ def compute_dispersion_correction(
     # Retrieve all useful energies
     energies = job.get_energies()
 
+    # Write data to file
+    global lock
+    with lock:
         with open(output_file, mode="a") as out_file:
             values = [
                 energies["scfenergy"],
@@ -127,7 +132,7 @@ def compute_dispersion_correction(
 def setup_logger():
     """Setup logging"""
     # Setup logging
-    logging_level = logging.INFO
+    logging_level = logging.DEBUG
 
     logger_subprocess = multiprocessing.get_logger()
     logger_subprocess.setLevel(logging_level)
@@ -145,7 +150,6 @@ def setup_logger():
 
     logger_subprocess.addHandler(stream_handler)
     logger_general.addHandler(stream_handler)
-    return None
 
 
 def main():
@@ -203,6 +207,7 @@ def main():
                     file_name=file_name,
                     locations=folders,
                     gaussian_args=gaussian_arguments,
+                    output_file=output_file_raw,
                 )
                 results.append(future_result)
                 logging.info("Submitted %s", str(file_name))
